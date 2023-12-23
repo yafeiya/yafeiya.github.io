@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="description"
+      content="In recent years, the neural implicit surface has emerged as a powerful representation for multi-view surface reconstruction due to its simplicity and state-of-the-art performance. However, reconstructing smooth and detailed surfaces in indoor scenes from multi-view images presents unique challenges. Indoor scenes typically contain large texture-less regions, making the photometric loss unreliable for optimizing the implicit surface. Previous work utilizes monocular geometry priors to improve the reconstruction in indoor scenes. However, monocular priors often contain substantial errors in thin structure regions due to domain gaps and the inherent inconsistencies when derived independently from different views. This paper presents DebSDF to address these challenges, focusing on the utilization of uncertainty in monocular priors. We propose an uncertainty modeling technique that associates larger uncertainties with larger errors in the priors. High-uncertainty priors are then excluded from optimization to prevent bias. This uncertainty measure also informs an importance-guided ray sampling and adaptive smoothness regularization, enhancing the learning of fine structures. We further introduce a bias-aware signed distance to density transformation that takes into account the curvature radius and the angle between the view direction and the SDF normals to better reconstruct fine details. Our approach has been validated through extensive experiments on several challenging datasets, demonstrating improved qualitative and quantitative results in reconstructing thin structures in indoor scenes, thereby outperforming previous work. The code will be made publicly available."
+    />
+    <meta name="keywords" content="Multi-view Reconstruction, Neural Surface Reconstruction, Implicit Representation, Indoor Scenes Reconstruction" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      DebSDF: Delving into the Details and Bias of Neural Indoor Scene Reconstruction
+    </title>
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./static/css/bulma.min.css" />
+    <link rel="stylesheet" href="./static/css/bulma-carousel.min.css" />
+    <link rel="stylesheet" href="./static/css/bulma-slider.min.css" />
+    <link rel="stylesheet" href="./static/css/fontawesome.all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"
+    />
+    <link rel="stylesheet" href="./static/css/index.css" />
+    <!-- <link rel="icon" href="./static/images/favicon.svg"> -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="./static/js/fontawesome.all.min.js"></script>
+    <script src="./static/js/bulma-carousel.min.js"></script>
+    <script src="./static/js/bulma-slider.min.js"></script>
+    <!-- <link -->
+    <!--   rel="stylesheet" -->
+    <!--   href="./definitive-image-comparison-slider-master/src/dics.css" -->
+    <!-- /> -->
+    <!-- <script src="./definitive-image-comparison-slider-master/src/dics.js"></script> -->
+
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👗</text></svg>">
+
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css"> -->
+
+    <link rel="stylesheet" href="./static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./static/css/app.css"/>
+    <script src="./static/js/app.js"></script>
+    <link rel="stylesheet" href="./static/css/dics.min.css"/>
+    <script src="./static/js/dics.min.js"></script>
+    <script src="./static/js/video_comparison.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', domReady);
+        function domReady() {
+            for (const e of document.querySelectorAll(".b-dics")) {
+                new Dics({
+                    container: e,
+                    textPosition: "top"
+                });
+            }
+        }
+    </script>
+    <!-- <script> -->
+    <!--   document.addEventListener("DOMContentLoaded", domReady); -->
+    <!--   function domReady() { -->
+    <!--     var b = document.querySelectorAll(".b-dics"); -->
+    <!--     b.forEach( -->
+    <!--       (element) => -->
+    <!--         new Dics({ -->
+    <!--           container: element, -->
+    <!--           textPosition: "top", -->
+    <!--         }) -->
+    <!--     ); -->
+    <!--   } -->
+    <!-- </script> -->
+    <script src="./static/js/index.js"></script>
+    <script src="./static/js/zotero-meta.js"></script>
+    <!-- TODO -->
+    <script>
+      $(document).ready(function () {
+        const citations = [
+          {
+            name: "citation_title",
+            content:
+              "DebSDF: Delving into the Details and Bias of Neural Indoor Scene Reconstruction",
+          },
+          {
+            name: "citation_author",
+            content: "Xiao, Yuting",
+          },
+          {
+            name: "citation_author",
+            content: "Xu, Jingwei",
+          },
+          {
+            name: "citation_author",
+            content: "Yu, Zehao",
+          },
+          {
+            name: "citation_author",
+            content: "Gao, Shenghua",
+          },
+          {
+            name: "citation_date",
+            content: "2023/08/29",
+          },
+          {
+            name: "citation_online_date",
+            content: "2023/08/29",
+          },
+          {
+            name: "citation_pdf_url",
+            content: "https://arxiv.org/abs/2308.15536",
+          },
+          {
+            name: "citation_arxiv_id",
+            content: "2308.15536",
+          },
+          {
+            name: "citation_abstract",
+            content:
+              "In recent years, the neural implicit surface has emerged as a powerful representation for multi-view surface reconstruction due to its simplicity and state-of-the-art performance. However, reconstructing smooth and detailed surfaces in indoor scenes from multi-view images presents unique challenges. Indoor scenes typically contain large texture-less regions, making the photometric loss unreliable for optimizing the implicit surface. Previous work utilizes monocular geometry priors to improve the reconstruction in indoor scenes. However, monocular priors often contain substantial errors in thin structure regions due to domain gaps and the inherent inconsistencies when derived independently from different views. This paper presents DebSDF to address these challenges, focusing on the utilization of uncertainty in monocular priors and the bias in SDF-based volume rendering. We propose an uncertainty modeling technique that associates larger uncertainties with larger errors in the monocular priors. High-uncertainty priors are then excluded from optimization to prevent bias. This uncertainty measure also informs an importance-guided ray sampling and adaptive smoothness regularization, enhancing the learning of fine structures. We further introduce a bias-aware signed distance function to density transformation that takes into account the curvature and the angle between the view direction and the SDF normals to reconstruct fine details better. Our approach has been validated through extensive experiments on several challenging datasets, demonstrating improved qualitative and quantitative results in reconstructing thin structures in indoor scenes, thereby outperforming previous work. The source code and more visualizations can be found in https://davidxu-jj.github.io/pubs/DebSDF/.",
+          },
+        ];
+        createCitationMeta(citations);
+      });
+    </script>
+  </head>
+  <body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start" style="flex-grow: 1; justify-content: center">
+          <a class="navbar-item" href="index.html">
+            <span class="icon">
+              <i class="fas fa-undo"></i>
+            </span>
+          </a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Detailed Comparison with Different Methods<b>(Recommended)</b> </a>
+            <div class="navbar-dropdown">
+              <a class="navbar-item" href="index.html">
+                Project Home (Back)
+              </a>
+              <a class="navbar-item" href="scannet.html">
+                Scannet Comparison
+              </a>
+              <a class="navbar-item" href="breakfast_room.html">
+                Breakfast Room Comparison
+              </a>
+              <a class="navbar-item" href="green_room.html">
+                Green Room Comparison
+              </a>
+              <a class="navbar-item" href="courtroom.html">
+                TNT Advanced Courtroom Comparison
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered">
+            <div class="column has-text-centered">
+              <h1 class="title is-1 publication-title" style="font-size: 36px">
+                DebSDF: Delving into the Details and Bias of Neural Indoor Scene Reconstruction
+              </h1>
+              <div class="is-size-5 publication-authors">
+                <span class="author-block" style="font-size: 22px">
+                  <a href="https://svip-lab.github.io/team/xiaoyt.html">Yuting Xiao</a
+                  ><sup>1*</sup>,
+                </span>
+                <span class="author-block" style="font-size: 22px">
+                  <a href="https://davidxu-jj.github.io/">Jingwei Xu</a
+                  ><sup>1*</sup>,
+                </span>
+                <span class="author-block" style="font-size: 22px">
+                  <a href="https://niujinshuchong.github.io">Zehao Yu</a
+                  ><sup>2</sup>,
+                </span>
+                <span class="author-block" style="font-size: 22px">
+                  <a href="https://svip-lab.github.io/team">Shenghua Gao</a
+                  ><sup>1,3,4†</sup>,
+                </span>
+              </div>
+
+              <div class="is-size-5 publication-authors">
+                <span class="author-block" style="font-size: 18px"
+                  ><sup>1</sup>ShanghaiTech University</span
+                >
+                <span class="author-block" style="font-size: 18px"
+                  ><sup>2</sup>University of Tübingen</span
+                >
+                <span class="author-block" style="font-size: 18px"
+                  ><sup>3</sup>Shanghai Engineering Research Center of Intelligent Vision and Imaging</span
+                >
+                <span class="author-block" style="font-size: 18px"
+                  ><sup>4</sup>Shanghai Engineering Research Center of Energy Efficient and Custom AI IC</span
+                >
+              </div>
+              <div class="is-size-5 publication-authors">
+                <!-- TODO -->
+                <!-- <strong>Coming soon</strong> -->
+              </div>
+              <div class="column has-text-centered">
+                <div class="link-block">
+                  <!-- PDF Link. -->
+                  <!-- TODO -->
+                  <span class="link-block">
+                    <a
+                      href=""
+                      class="external-link button is-normal is-rounded is-dark"
+                    >
+                      <span class="icon">
+                        <i class="fas fa-file-pdf"></i>
+                      </span>
+                      <span>Paper(Coming soon)</span>
+                    </a>
+                  </span>
+                  <span class="link-block">
+                    <a
+                      href="https://arxiv.org/abs/2308.15536"
+                      class="external-link button is-normal is-rounded is-dark"
+                    >
+                      <span class="icon">
+                        <i class="ai ai-arxiv"></i>
+                      </span>
+                      <span>arXiv</span>
+                    </a>
+                  </span>
+                  <!-- <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Supplementary</span>
+                </a>
+              </span> -->
+                  <!-- Video Link. -->
+                  <!-- <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+                  <!-- Code Link. -->
+                  <!-- TODO -->
+                  <span class="link-block">
+                    <a
+                      href="https://github.com/DavidXu-JJ/DebSDF"
+                      class="external-link button is-normal is-rounded is-dark"
+                    >
+                      <span class="icon">
+                        <i class="fab fa-github"></i>
+                      </span>
+                      <span>Code(Coming soon)</span>
+                    </a>
+                  </span>
+                  <!-- Dataset Link. -->
+                  <!-- <span class="link-block">
+                <a href="https://mega.nz/folder/jdhDnTqL#Ija678SU2Va_JJOiwqmdEg"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                </a>
+              </span> -->
+                </div>
+              </div>
+
+              <!-- <div style="font-size: 10px"> -->
+              <!--   <a href="https://www.zotero.org/" -->
+              <!--     ><b style="color: #a6212c">Z</b>otero Connector</a -->
+              <!--   > -->
+              <!--   friendly -->
+              <!-- </div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+
+    <section class="section" id="compare">
+
+      <div class="columns is-centered has-text-centered" id="video">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2">Kitchen Comparison</h2>
+          (You may need to refresh your browser if you can't see the video.)
+          <h3 id="compareText">
+            MonoSDF(Left) 
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Ours(Right)
+          </h3>
+          <video class="video" width=100% id="xyalias" loop playsinline autoplay muted src="./static/videos/kitchen/compare1.mp4" onplay="resizeAndPlay(this)"></video>
+          <canvas height=0 class="videoMerge" id="xyaliasMerge"></canvas>
+          <br>
+          <br>
+          <button id="MonoSDF">MonoSDF</button>
+          <button id="NeuRIS">NeuRIS</button>
+          <button id="GT">Ground Truth</button>
+        </div>
+      </div>
+
+      <script>
+      const video = document.getElementById('xyalias');
+      const buttonMonoSDF = document.getElementById('MonoSDF');
+      const buttonNeuRIS = document.getElementById('NeuRIS');
+      const buttonGT = document.getElementById('GT');
+      const text = document.getElementById('compareText');
+
+      buttonMonoSDF.addEventListener('click', () => {
+        video.src = './static/videos/kitchen/compare1.mp4'; 
+        const newText = ' MonoSDF(Left)\
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+            Ours(Right)\
+          ';
+        text.innerHTML = newText;
+      });
+      buttonNeuRIS.addEventListener('click', () => {
+        video.src = './static/videos/kitchen/compare2.mp4'; 
+        const newText = ' NeuRIS(Left)\
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+            Ours(Right)\
+          ';
+        text.innerHTML = newText;
+      });
+      buttonGT.addEventListener('click', () => {
+        video.src = './static/videos/kitchen/compare3.mp4';
+        const newText = ' Ground Truth(Left)\
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+            Ours(Right)\
+          ';
+        text.innerHTML = newText;
+      });
+      </script>
+    </section>
+
+
+
+    <section class="section" id="BibTeX">
+      <div class="container is-max-desktop content">
+        <h2 class="title">BibTeX</h2>
+        <!-- TODO -->
+        <pre><code>@misc{xiao2023debsdf,
+      title={DebSDF: Delving into the Details and Bias of Neural Indoor Scene Reconstruction}, 
+      author={Yuting Xiao and Jingwei Xu and Zehao Yu and Shenghua Gao},
+      year={2023},
+      eprint={2308.15536},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+</code></pre>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="content has-text-centered">
+          <!-- TODO -->
+          <a class="icon-link" href="https://arxiv.org/pdf/2308.15536.pdf">
+            <i class="fas fa-file-pdf"></i>
+          </a>
+            <!-- TODO -->
+          <a
+            class="icon-link"
+            href="https://github.com/DavidXu-JJ/DebSDF"
+            class="external-link"
+            disabled
+          >
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+        <div class="columns is-centered">
+          <div class="column is-8">
+            <div class="content">
+              <p>
+                Thanks to
+                <!-- TODO -->
+                <a href="https://github.com/nerfies/nerfies.github.io"
+                  >Nerfies</a
+                >
+                for their excellent website templates.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      bulmaCarousel.attach("#geo-carousel", {
+        slidesToScroll: 1,
+        slidesToShow: 1,
+        infinite: true,
+      });
+      bulmaCarousel.attach("#novel-carousel", {
+        slidesToScroll: 1,
+        slidesToShow: 2,
+        infinite: true,
+      });
+      bulmaCarousel.attach("#edit-carousel", {
+        slidesToScroll: 1,
+        slidesToShow: 2,
+        infinite: true,
+      });
+    </script>
+  </body>
+</html>
+
+
+
